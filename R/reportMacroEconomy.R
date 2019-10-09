@@ -230,8 +230,19 @@ reportMacroEconomy <- function(gdx,regionSubsetList=NULL){
     )
   }
   
+  # *NB* add Gross National Product GNP to the reporting; GNP is GDP corrected by additional incomes from fossil and agricultural trade
+  # in baseline cases GNP equals GDP
+  x <- module2realisation %>% filter(modules == "agCosts")
+  if(x$`*` == "costs_trade"){
+    p45_econmetric_pol <- readGDX(gdx,c("p45_econmetric_pol"),format="first_found")
+    gnp      <- setNames(1000*p45_econmetric_pol, "GNP|MER (billion US$2005/yr)")
+  }else{
+    gnp      <- setNames(vm_cesIO[,,"inco"]*1000,        "GNP|MER (billion US$2005/yr)")
+  }
+  
+  
   #define list of variables that will be exported:
-  varlist <- list(cons,gdp,gdp_ppp,invE,invM,pop,cap,inv,ces,damageFactor,welf) #,curracc)
+  varlist <- list(cons,gdp,gdp_ppp,gnp,invE,invM,pop,cap,inv,ces,damageFactor,welf) #,curracc)
   # use the same temporal resolution for all variables
   # calculate minimal temporal resolution
   tintersect = Reduce(intersect,lapply(varlist,getYears))
@@ -264,5 +275,6 @@ reportMacroEconomy <- function(gdx,regionSubsetList=NULL){
   }
   # add interest rate
   out <- mbind(out,inteRate)
+  
   return(out)
 }
