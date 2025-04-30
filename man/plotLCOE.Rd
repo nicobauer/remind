@@ -4,11 +4,18 @@
 \alias{plotLCOE}
 \title{Read in LCOE mif and write LCOE_plots.pdf}
 \usage{
-plotLCOE(mif, y = c(2015, 2020, 2030, 2040, 2050, 2060), reg = NULL,
-  fileName = "LCOE_plots.pdf")
+plotLCOE(
+  LCOEfile,
+  gdx,
+  y = c(2015, 2020, 2030, 2040, 2050, 2060),
+  reg = "all_regi",
+  fileName = "LCOE_plots.pdf"
+)
 }
 \arguments{
-\item{mif}{a path to one or more mif-files (might be created by confGDX2MIF)}
+\item{LCOEfile}{a path to the LCOE reporting csv file of the scenario to be plotted}
+
+\item{gdx}{gdx file of run}
 
 \item{y}{time span for the data in line plots, default: y=c(2015, 2020,2030,2040,2050,2060)}
 

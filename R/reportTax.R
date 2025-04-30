@@ -78,6 +78,7 @@ reportTax <- function(gdx,regionSubsetList=NULL){
   fe_tax  <- readGDX(gdx, name=c('p21_tau_fe_tax','pm_tau_fe_tax'), format="first_found", react = "silent")
   fe_sub  <- readGDX(gdx, name=c('p21_tau_fe_sub','pm_tau_fe_sub'), format="first_found", react = "silent")
   p21_taxrevGHG0 <- readGDX(gdx, name=c("p21_taxrevGHG0"), format= "first_found")
+  p21_taxrevCO2luc0 <- readGDX(gdx, name=c("p21_taxrevCO2luc0"), format= "first_found")
   p21_taxrevCCS0 <- readGDX(gdx, name=c("p21_taxrevCCS0"), format= "first_found")
   p21_taxrevNetNegEmi0 <- readGDX(gdx, name=c("p21_taxrevNetNegEmi0"), format= "first_found")
   p21_taxrevFEtrans0 <- readGDX(gdx, name=c("p21_taxrevFEtrans0"), format= "first_found")
@@ -109,7 +110,7 @@ reportTax <- function(gdx,regionSubsetList=NULL){
   if(!is.null(fuEx_sub)){fuExtr <- readGDX(gdx, c("vm_fuExtr"),field="l", format="first_found",restore_zeros=FALSE,react="silent")}
   vm_cesIO <- readGDX(gdx, name=c("vm_cesIO"), field="l", restore_zeros=FALSE,format= "first_found")
   vm_demFeForEs <- readGDX(gdx, name=c("vm_demFeForEs"), field="l", restore_zeros=FALSE,format= "first_found", react = "silent")
-  vm_co2capture  <- readGDX(gdx,name=c("vm_co2capture","vm_co2CCS","v_co2CCS","v_ccs"),field="l",restore_zeros=FALSE,format="first_found", react = "silent")
+  vm_co2CCS  <- readGDX(gdx,name=c("vm_co2CCS","v_co2CCS","v_ccs"),field="l",restore_zeros=FALSE,format="first_found", react = "silent")
   vm_emicdrregi  <- readGDX(gdx,name=c("vm_emiCdr","vm_emicdrregi"),field="l",format="first_found")
   vm_emiengregi  <- readGDX(gdx,name=c("vm_emiTe","vm_emiengregi"),field="l",format="first_found")
   vm_sumeminegregi  <- readGDX(gdx,name=c("vm_emiMac","vm_sumeminegregi"),field="l",format="first_found")
@@ -129,6 +130,9 @@ reportTax <- function(gdx,regionSubsetList=NULL){
       vm_demFeForEs  <- vm_demFeForEs[,y,][fe2es]*TWa_2_EJ  
     }} 
   p21_taxrevGHG0 <- p21_taxrevGHG0[,y,]
+  if (!is.null(p21_taxrevCO2luc0)){
+  p21_taxrevCO2luc0 <- p21_taxrevCO2luc0[,y,]
+  }
   p21_taxrevCCS0 <- p21_taxrevCCS0[,y,]
   p21_taxrevNetNegEmi0 <- p21_taxrevNetNegEmi0[,y,]
   p21_taxrevFEtrans0 <- p21_taxrevFEtrans0[,y,]
@@ -139,7 +143,7 @@ reportTax <- function(gdx,regionSubsetList=NULL){
   p21_taxrevXport0 <- p21_taxrevXport0[,y,]
   p21_taxrevSO20 <- p21_taxrevSO20[,y,]
   p21_taxrevBio0 <- p21_taxrevBio0[,y,]
-  vm_co2capture <- vm_co2capture[,y,]
+  vm_co2CCS <- vm_co2CCS[,y,]
   vm_emicdrregi <- vm_emicdrregi[,y,]
   vm_emiengregi <- vm_emiengregi[,y,]
   vm_sumeminegregi <- vm_sumeminegregi[,y,]
@@ -536,10 +540,21 @@ reportTax <- function(gdx,regionSubsetList=NULL){
   }
   
   #tax levels of all taxes in equation q21_taxrev
-  
   if (!is.null(p21_taxrevGHG0)){
+    if (!is.null(p21_taxrevCO2luc0)){
+      #note: CO2 from LUC is now treated separately in tax revenue recycling
+      #total GHG tax revenue = taxrevGHG0 + taxrevCO2luc0
     out <- mbind(out,
-                 setNames(p21_taxrevGHG0*1000,"Taxes|GHG emissions|GAMS calculated (billion US$2005/yr)"),
+                 setNames(p21_taxrevGHG0*1000,"Taxes|GHG emissions w/o CO2 LUC|GAMS calculated (billion US$2005/yr)"),
+                 setNames(p21_taxrevCO2luc0*1000,"Taxes|CO2 LUC|GAMS calculated (billion US$2005/yr)"),
+                 setNames((p21_taxrevGHG0+p21_taxrevCO2luc0)*1000,"Taxes|GHG emissions|GAMS calculated (billion US$2005/yr)")
+    )
+    }else{
+      out <- mbind(out,
+                   setNames(p21_taxrevGHG0*1000,"Taxes|GHG emissions|GAMS calculated (billion US$2005/yr)")
+                   )
+    }
+    out <- mbind(out,
                  setNames(p21_taxrevCCS0*1000,"Taxes|CCS|GAMS calculated (billion US$2005/yr)"),
                  setNames(p21_taxrevNetNegEmi0*1000,"Taxes|Net-negative emissions|GAMS calculated (billion US$2005/yr)"),
                  setNames(p21_taxrevFEtrans0*1000,"Taxes|Final Energy|Transportation II|GAMS calculated (billion US$2005/yr)"),
@@ -549,9 +564,9 @@ reportTax <- function(gdx,regionSubsetList=NULL){
                  setNames(p21_taxrevXport0*1000,"Taxes|Exports|GAMS calculated (billion US$2005/yr)"),
                  setNames(p21_taxrevSO20*1000,"Taxes|SO2|GAMS calculated (billion US$2005/yr)"),
                  setNames(p21_taxrevBio0*1000,"Taxes|Bioenergy|GAMS calculated (billion US$2005/yr)")
-    )
+                 )
     out <- mbind(out,
-                 setNames(out[,,"Taxes|CCS|GAMS calculated (billion US$2005/yr)"]/vm_co2capture[,,"cco2.ico2.ccsinje.1"]*12/44,"Tax rate|CCS|GAMS calculated (US$2005/t CO2)"),
+                 setNames(out[,,"Taxes|CCS|GAMS calculated (billion US$2005/yr)"]/vm_co2CCS[,,"cco2.ico2.ccsinje.1"]*12/44,"Tax rate|CCS|GAMS calculated (US$2005/t CO2)"),
                  setNames(out[,,"Taxes|Net-negative emissions|GAMS calculated (billion US$2005/yr)"]/(vm_emiengregi[,,"co2"] + vm_sumeminegregi[,,"co2"] + vm_emicdrregi[,,"co2"])*12/44*(-1),"Tax rate|Net-negative emissions|GAMS calculated (US$2005/t CO2)")
     )
   }
@@ -566,7 +581,7 @@ reportTax <- function(gdx,regionSubsetList=NULL){
   out <- mbind(out,dimSums(out,dim=1))
   # add other region aggregations
   if (!is.null(regionSubsetList))
-    out <- mbind(out,do.call("mbind",lapply(names(regionSubsetList), function(x) { result <- dimSums(out[regionSubsetList[[x]],,],dim=1); getRegions(result) <- x ; return(result) })))
+    out <- mbind(out, calc_regionSubset_sums(out, regionSubsetList))
   
   return(out)
 }

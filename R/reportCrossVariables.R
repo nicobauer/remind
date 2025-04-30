@@ -100,48 +100,40 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL){
                    output[r,,"SE|Liquids|Biomass (EJ/yr)"] 
                  * output[r,,"PE|Biomass|Energy Crops (EJ/yr)"]
                  / output[r,,"PE|+|Biomass (EJ/yr)"],                     "SE|Liquids|Biomass|Energy Crops (EJ/yr)"))
-  tmp <- mbind(tmp,setNames(
-                   output[r,,"FE|Transport|Freight (EJ/yr)"] 
-                 * output[r,,"SE|Liquids|Oil (EJ/yr)"]
-                 / output[r,,"SE|Liquids (EJ/yr)"],                     "FE|Transport|Freight|Liquids|Oil (EJ/yr)"))
-  tmp <- mbind(tmp,setNames(
-                   output[r,,"FE|Transport|Freight (EJ/yr)"] 
-                 * output[r,,"SE|Liquids|Biomass (EJ/yr)"]
-                 / output[r,,"SE|Liquids (EJ/yr)"],                     "FE|Transport|Freight|Liquids|Biomass (EJ/yr)"))
-  tmp <- mbind(tmp,setNames(
-                   output[r,,"FE|Transport|Freight (EJ/yr)"] 
-                 * output[r,,"SE|Liquids|Coal (EJ/yr)"]
-                 / output[r,,"SE|Liquids (EJ/yr)"],                     "FE|Transport|Freight|Liquids|Coal (EJ/yr)"))
-  tmp <- mbind(tmp,setNames(
-                   output[r,,"FE|Transport|Liquids (EJ/yr)"] 
-                 * output[r,,"SE|Liquids|Biomass (EJ/yr)"]
-                 / output[r,,"SE|Liquids (EJ/yr)"],                     "FE|Transport|Liquids|Biomass (EJ/yr)"))
-  tmp <- mbind(tmp,setNames(
-                   output[r,,"FE|Transport|Liquids (EJ/yr)"] 
-                 * output[r,,"SE|Liquids|Coal (EJ/yr)"]
-                 / output[r,,"SE|Liquids (EJ/yr)"],                     "FE|Transport|Liquids|Coal (EJ/yr)"))
-  tmp <- mbind(tmp,setNames(
-                   output[r,,"FE|Transport|Liquids (EJ/yr)"] 
-                 * output[r,,"SE|Liquids|Oil (EJ/yr)"]
-                 / output[r,,"SE|Liquids (EJ/yr)"],                     "FE|Transport|Liquids|Oil (EJ/yr)"))
-  tmp <- mbind(tmp,setNames(
-                 ( output[r,,"FE|Transport|Pass (EJ/yr)"] - output[r,,"FE|Transport|Electricity (EJ/yr)"] )
-                 * output[r,,"SE|Liquids|Oil (EJ/yr)"]
-                 / output[r,,"SE|Liquids (EJ/yr)"],                     "FE|Transport|Pass|Liquids|Oil (EJ/yr)"))
-  tmp <- mbind(tmp,setNames(
-                 ( output[r,,"FE|Transport|Pass (EJ/yr)"] - output[r,,"FE|Transport|Electricity (EJ/yr)"] )
-                 * output[r,,"SE|Liquids|Biomass (EJ/yr)"]
-                 / output[r,,"SE|Liquids (EJ/yr)"],                     "FE|Transport|Pass|Liquids|Biomass (EJ/yr)"))
-  tmp <- mbind(tmp,setNames(
-                 ( output[r,,"FE|Transport|Pass (EJ/yr)"] - output[r,,"FE|Transport|Electricity (EJ/yr)"] )
-                 * output[r,,"SE|Liquids|Coal (EJ/yr)"]
-                 / output[r,,"SE|Liquids (EJ/yr)"],                     "FE|Transport|Pass|Liquids|Coal (EJ/yr)"))
+
+
 
   if(tran_mod == "complex"){
-      tmp <- mbind(tmp,setNames(
+    if ("seliq" %in% pe2se$all_enty1) {
+        ## before the split to seliqfos/seliqbio, SE level shares can be used to determine
+        ## the bioliquid shares on all levels
+        tmp <- mbind(tmp,
+                    setNames(
+                      output[r,,"FE|Transport|Pass|Liquids (EJ/yr)"]
+                      * output[r,,"SE|Liquids|Biomass (EJ/yr)"]
+                      / output[r,,"SE|Liquids (EJ/yr)"],
+                      "FE|Transport|Pass|Liquids|Biomass (EJ/yr)"),
+                    setNames(
+                      output[r,,"FE|Transport|Freight|Liquids (EJ/yr)"]
+                      * output[r,,"SE|Liquids|Biomass (EJ/yr)"]
+                      / output[r,,"SE|Liquids (EJ/yr)"],
+                      "FE|Transport|Freight|Liquids|Biomass (EJ/yr)"),
+                    setNames(
+                      output[r,,"FE|Transport|Liquids (EJ/yr)"]
+                      * output[r,,"SE|Liquids|Biomass (EJ/yr)"]
+                      / output[r,,"SE|Liquids (EJ/yr)"],
+                      "FE|Transport|Liquids|Biomass (EJ/yr)"),
+                    setNames(
+                      output[r,,"FE|Transport|Pass|Road|LDV|Liquids (EJ/yr)"]
+                      * output[r,,"SE|Liquids|Biomass (EJ/yr)"]
+                      / output[r,,"SE|Liquids (EJ/yr)"],
+                      "FE|Transport|Pass|Road|LDV|Liquids|Biomass (EJ/yr)"))
+      }else{
+        tmp <- mbind(tmp,setNames(
                            output[r,,"FE|Transport|Pass|Road|LDV|Liquids (EJ/yr)"] 
-                           * output[r,,"SE|Liquids|Biomass (EJ/yr)"]
-                           / output[r,,"SE|Liquids (EJ/yr)"],                     "FE|Transport|Pass|Road|LDV|Liquids|Biomass (EJ/yr)"))
+                           * output[r,,"FE|Transport|Pass|Liquids|Biomass (EJ/yr)"]
+                           / output[r,,"FE|Transport|Pass|Liquids (EJ/yr)"],                     "FE|Transport|Pass|Road|LDV|Liquids|Biomass (EJ/yr)"))
+      }
       tmp <- mbind(tmp,setNames(
                            output[r,,"FE|Transport|Pass|Road|LDV|Liquids (EJ/yr)"] 
                            * output[r,,"SE|Liquids|Coal (EJ/yr)"]
@@ -162,7 +154,7 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL){
   tmp <- mbind(tmp,dimSums(tmp,dim=1))
   # add other region aggregations
   if (!is.null(regionSubsetList))
-    tmp <- mbind(tmp,do.call("mbind",lapply(names(regionSubsetList), function(x) { result <- dimSums(tmp[regionSubsetList[[x]],,],dim=1); getRegions(result) <- x ; return(result) })))
+    tmp <- mbind(tmp, calc_regionSubset_sums(tmp, regionSubsetList))
   
   # correct global values for intensive variables (prices, LCOES, Capacity factors) 
   map <- data.frame(region=getRegions(tmp["GLO",,,invert=TRUE]),world="GLO",stringsAsFactors=FALSE)
@@ -181,34 +173,55 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL){
   }
   
   # variables that are calculated for all regions including GLO in the same way
-  tmp <- mbind(tmp,setNames(
-                  output[,,"FE (EJ/yr)"] * 1000
-                / output[,,"GDP|MER (billion US$2005/yr)"],           "Intensity|GDP|Final Energy (MJ/US$2005)"))
-  tmp <- mbind(tmp,setNames(
-                  output[,,"GDP|MER (billion US$2005/yr)"] 
-                / output[,,"FE (EJ/yr)"],           "Productivity|GDP|MER|Final Energy (US$2005/GJ)"))
-  tmp <- mbind(tmp,setNames(
-                  output[,,"GDP|PPP (billion US$2005/yr)"] 
-                / output[,,"FE (EJ/yr)"],           "Productivity|GDP|PPP|Final Energy (US$2005/GJ)"))
-  tmp <- mbind(tmp,setNames(
-                  (output[,,"Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"] - output[,,"Emi|CO2|Fossil Fuels and Industry|Cement process (Mt CO2/yr)"])
-                / output[,,"FE (EJ/yr)"],                 "Intensity|Final Energy|CO2 (Mt CO2/EJ)"))
-  tmp <- mbind(tmp,setNames(
-                  output[,,"Emi|GHGtot (Mt CO2-equiv/yr)"]
-                / output[,,"GDP|MER (billion US$2005/yr)"],                 "Intensity|GDP|CO2 (Mt CO2-equiv/US$2005)"))
-  tmp <- mbind(tmp,setNames(
-                  output[,,"Emi|GHGtot (Mt CO2-equiv/yr)"]
-                / output[,,"FE (EJ/yr)"],                 "Intensity|Final Energy|CO2 (Mt CO2-equiv/EJ)"))
-  tmp <- mbind(tmp,setNames(
-                  output[,,"GDP|MER (billion US$2005/yr)"]
-                / output[,,"Population (million)"],                 "GDP|per capita|MER (kUS$2005/per capita)"))
-  tmp <- mbind(tmp,setNames(
-                  output[,,"GDP|PPP (billion US$2005/yr)"]
-                / output[,,"Population (million)"],                 "GDP|per capita|PPP (kUS$2005/per capita)")) 
-  tmp <- mbind(tmp,setNames(
-    output[,,"Welfare|Real and undiscounted|Yearly (arbitrary unit/yr)"]
-    / output[,,"Population (million)"],                 "Welfare|per capita|Real and undiscounted|Yearly (arbitrary unit/yr)")) 
-
+  tmp <- mbind(
+    tmp,
+    
+    setNames(
+        output[,,"FE (EJ/yr)"] * 1000
+      / output[,,"GDP|MER (billion US$2005/yr)"],
+      "Intensity|GDP|Final Energy (MJ/US$2005)"),
+    
+    setNames(
+        output[,,"GDP|MER (billion US$2005/yr)"] 
+      / output[,,"FE (EJ/yr)"],
+      "Productivity|GDP|MER|Final Energy (US$2005/GJ)"),
+    
+    setNames(
+        output[,,"GDP|PPP (billion US$2005/yr)"] 
+      / output[,,"FE (EJ/yr)"],
+      "Productivity|GDP|PPP|Final Energy (US$2005/GJ)"),
+    
+    setNames(
+        ( output[,,"Emi|CO2|Fossil Fuels and Industry (Mt CO2/yr)"] 
+        - output[,,"Emi|CO2|Fossil Fuels and Industry|Cement process (Mt CO2/yr)"]
+        )
+      / output[,,"FE (EJ/yr)"],
+      "Intensity|Final Energy|CO2 (Mt CO2/EJ)"),
+    
+    setNames(
+        output[,,"Emi|GHGtot (Mt CO2-equiv/yr)"]
+      / output[,,"FE (EJ/yr)"],
+      "Intensity|Final Energy|GHG (Mt CO2-equiv/EJ)"),
+    
+    setNames(
+        output[,,"Emi|GHGtot (Mt CO2-equiv/yr)"]
+      / output[,,"GDP|MER (billion US$2005/yr)"],
+      "Intensity|GDP|GHG (Mt CO2-equiv/US$2005)"),
+    
+    setNames(
+        output[,,"GDP|MER (billion US$2005/yr)"]
+      / output[,,"Population (million)"],
+      "GDP|per capita|MER (kUS$2005/per capita)"),
+    
+    setNames(
+        output[,,"GDP|PPP (billion US$2005/yr)"]
+      / output[,,"Population (million)"],
+      "GDP|per capita|PPP (kUS$2005/per capita)"),
+    
+    setNames(
+        output[,,"Welfare|Real and undiscounted|Yearly (arbitrary unit/yr)"]
+      / output[,,"Population (million)"],
+      "Welfare|per capita|Real and undiscounted|Yearly (arbitrary unit/yr)"))
   
   # Energy shares
   tmp <- mbind(tmp,setNames(       # assume 8% for transmission losses and autoconsumption of power plants
@@ -262,28 +275,28 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL){
     int_gr[,t,"Intensity Growth|GDP|CO2-equiv (% pa)"] <- 
       ( 
         ( 
-          (tmp[,t,"Intensity|GDP|CO2 (Mt CO2-equiv/US$2005)"] / setYears(tmp[,(which(getYears(tmp)==t)-1),"Intensity|GDP|CO2 (Mt CO2-equiv/US$2005)"],t))
+          (tmp[,t,"Intensity|GDP|GHG (Mt CO2-equiv/US$2005)"] / setYears(tmp[,(which(getYears(tmp)==t)-1),"Intensity|GDP|GHG (Mt CO2-equiv/US$2005)"],t))
           ^ (1 / ( getYears(tmp[,t,],as.integer=TRUE) - getYears(tmp[,(which(getYears(tmp)==t)-1),],as.integer=TRUE) ) )
         ) - 1
       ) * 100
     int_gr[,t,"Intensity Growth|GDP|CO2-equiv to 2005 (% pa)"] <- 
       ( 
         ( 
-          (tmp[,t,"Intensity|GDP|CO2 (Mt CO2-equiv/US$2005)"] / setYears(tmp[,2005,"Intensity|GDP|CO2 (Mt CO2-equiv/US$2005)"],t))
+          (tmp[,t,"Intensity|GDP|GHG (Mt CO2-equiv/US$2005)"] / setYears(tmp[,2005,"Intensity|GDP|GHG (Mt CO2-equiv/US$2005)"],t))
           ^ (1 / ( getYears(tmp[,t,],as.integer=TRUE) - 2005 ) )
         ) - 1
       ) * 100
     int_gr[,t,"Intensity Growth|Final Energy|CO2-equiv (% pa)"] <- 
       ( 
         ( 
-          (tmp[,t,"Intensity|Final Energy|CO2 (Mt CO2-equiv/EJ)"] / setYears(tmp[,(which(getYears(tmp)==t)-1),"Intensity|Final Energy|CO2 (Mt CO2-equiv/EJ)"],t))
+          (tmp[,t,"Intensity|Final Energy|GHG (Mt CO2-equiv/EJ)"] / setYears(tmp[,(which(getYears(tmp)==t)-1),"Intensity|Final Energy|GHG (Mt CO2-equiv/EJ)"],t))
           ^ (1 / ( getYears(tmp[,t,],as.integer=TRUE) - getYears(tmp[,(which(getYears(tmp)==t)-1),],as.integer=TRUE) ) )
         ) - 1
       ) * 100
     int_gr[,t,"Intensity Growth|Final Energy|CO2-equiv to 2005 (% pa)"] <- 
       ( 
         ( 
-          (tmp[,t,"Intensity|Final Energy|CO2 (Mt CO2-equiv/EJ)"] / setYears(tmp[,2005,"Intensity|Final Energy|CO2 (Mt CO2-equiv/EJ)"],t))
+          (tmp[,t,"Intensity|Final Energy|GHG (Mt CO2-equiv/EJ)"] / setYears(tmp[,2005,"Intensity|Final Energy|GHG (Mt CO2-equiv/EJ)"],t))
           ^ (1 / ( getYears(tmp[,t,],as.integer=TRUE) - 2005 ) )
         ) - 1
       ) * 100
@@ -373,7 +386,24 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL){
                           "Emi|CO2|Industry|Direct (Mt CO2/yr)"),
                  setNames(output[,,"Emi|CO2|Buildings|Direct|BeforeTradBiomassCorr (Mt CO2/yr)"]
                           - delta_Solids_emissions[,,"Emi|CO2|Buildings|Direct|BiomassCorrection  (Mt CO2/yr)"],
-                          "Emi|CO2|Buildings|Direct (Mt CO2/yr)")
+                          "Emi|CO2|Buildings|Direct (Mt CO2/yr)"),
+                 setNames(output[,,"Emi|CO2|Buildings|Solids|BeforeTradBiomassCorr (Mt CO2/yr)"]
+                          - delta_Solids_emissions[,,"Emi|CO2|Buildings|Direct|BiomassCorrection  (Mt CO2/yr)"],
+                          "Emi|CO2|Buildings|Solids (Mt CO2/yr)"),
+                 
+                 
+                 
+                 setNames(output[,,"Emi|CO2|Industry|Direct and Indirect|Gross|BeforeTradBiomassCorr (Mt CO2/yr)"]
+                          + delta_Solids_emissions[,,"Emi|CO2|Buildings|Direct|BiomassCorrection  (Mt CO2/yr)"],
+                          "Emi|CO2|Industry|Direct and Indirect|Gross (Mt CO2/yr)"),
+                 setNames(output[,,"Emi|CO2|Buildings|Direct and Indirect|Gross|BeforeTradBiomassCorr (Mt CO2/yr)"]
+                          - delta_Solids_emissions[,,"Emi|CO2|Buildings|Direct|BiomassCorrection  (Mt CO2/yr)"],
+                          "Emi|CO2|Buildings|Direct and Indirect|Gross (Mt CO2/yr)"),
+                 setNames(output[,,"Emi|CO2|Buildings|Solids|Gross|BeforeTradBiomassCorr (Mt CO2/yr)"]
+                          - delta_Solids_emissions[,,"Emi|CO2|Buildings|Direct|BiomassCorrection  (Mt CO2/yr)"],
+                          "Emi|CO2|Buildings|Solids|Gross (Mt CO2/yr)")
+                 
+                 
     )
     
   }
@@ -382,37 +412,20 @@ reportCrossVariables <- function(gdx,output=NULL,regionSubsetList=NULL){
    
   # calculate additional gross emissions variables
   
-  tmp1 <- setNames(output[,,"Emi|CO2|Energy|Supply|Electricity (Mt CO2/yr)"] + 
-                     output[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|Electricity|w/ couple prod (Mt CO2/yr)"],
-                   "Emi|CO2|Energy|Supply|Electricity|Gross (Mt CO2/yr)") 
-
-  tmp2 <- setNames(output[,,"Emi|CO2|Fossil Fuels and Industry|Energy Supply (Mt CO2/yr)"] +
-                     output[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|w/ couple prod (Mt CO2/yr)"] -
-                     tmp1[,,"Emi|CO2|Energy|Supply|Electricity|Gross (Mt CO2/yr)"],
-                   "Emi|CO2|Energy|Supply|Non-Elec (Mt CO2/yr)")
+ 
   
-  tmp3 <- setNames(tmp[,,"Emi|CO2|Industry|Direct (Mt CO2/yr)"] + 
+  tmp1 <- setNames(tmp[,,"Emi|CO2|Industry|Direct (Mt CO2/yr)"] + 
                      output[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Energy|Demand|Industry (Mt CO2/yr)"],
                    "Emi|CO2|Energy|Demand|Industry|Gross (Mt CO2/yr)") 
   
-  tmp4 <- setNames(-1 * output[,,"Emi|CO2|Carbon Capture and Storage|Biomass (Mt CO2/yr)"], 
-                    "Emi|CO2|Carbon Capture and Storage|Biomass|Neg (Mt CO2/yr)") 
-
-  tmp5 <- setNames(output[,,"Emi|CO2|Fossil Fuels and Industry|Energy Supply (Mt CO2/yr)"] +
-                   output[,,"Emi|CO2|Carbon Capture and Storage|Biomass|Supply|w/ couple prod (Mt CO2/yr)"],
-                   "Emi|CO2|Energy|Supply|Gross (Mt CO2/yr)")
-  
-  
-  
-  # calculate cumulative values
-  tmp <- mbind(tmp, 
-               setNames(cumulatedValue(tmp2[,,"Emi|CO2|Energy|Supply|Non-Elec (Mt CO2/yr)"]), "Emi|CO2|Energy|Supply|Non-Elec|Cumulated (Mt CO2/yr)"),
-               setNames(cumulatedValue(tmp1[,,"Emi|CO2|Energy|Supply|Electricity|Gross (Mt CO2/yr)"]), "Emi|CO2|Energy|Supply|Electricity|Gross|Cumulated (Mt CO2/yr)"),
-               setNames(cumulatedValue(tmp3[,,"Emi|CO2|Energy|Demand|Industry|Gross (Mt CO2/yr)"]), "Emi|CO2|Energy|Demand|Industry|Gross|Cumulated (Mt CO2/yr)"),
+ # calculate cumulative values
+  tmp <- mbind(tmp,
+               setNames(cumulatedValue(tmp1[,,"Emi|CO2|Energy|Demand|Industry|Gross (Mt CO2/yr)"]), "Emi|CO2|Energy|Demand|Industry|Gross|Cumulated (Mt CO2/yr)"),
                setNames(cumulatedValue(tmp[,,"Emi|CO2|Buildings|Direct (Mt CO2/yr)"]), "Emi|CO2|Buildings|Direct|Cumulated (Mt CO2/yr)")
   )
 
-  tmp <- mbind(tmp, tmp1, tmp2, tmp3, tmp4, tmp5)
+
+  tmp <- mbind(tmp, tmp1)
   
   tmp6 <- mbind(tmp,
                 setNames(output[,,"Emi|CO2|Transport|Demand (Mt CO2/yr)"] / output[,,"FE|Transport|Fuels (EJ/yr)"], "FE|Transport|Fossil Carbon Intensity of fuels (kg CO2/GJ)"),

@@ -192,14 +192,12 @@ validationSummary <- function(gdx, hist, reportfile=NULL, outfile="validationSum
   swlatex(sw,"\\subsection{FE Transport}")
   
   var.tot <-"FE|Transport (EJ/yr)"
-  vars <- c("FE|Transport|Liquids|Oil (EJ/yr)",
-            "FE|Transport|Liquids|Coal (EJ/yr)",
-            "FE|Transport|Liquids|Biomass (EJ/yr)",
-            #"FE|Transport|Gases (EJ/yr)",
+  vars <- c("FE|Transport|Liquids (EJ/yr)",
+            "FE|Transport|Gases (EJ/yr)",
             "FE|Transport|Electricity (EJ/yr)",
             "FE|Transport|Hydrogen (EJ/yr)"
   )
-  
+
   p <- mipArea(data["GLO",,vars], total = data["GLO",,var.tot]) + theme(legend.position="none")
   swfigure(sw,print,p,fig.width=0.5)
   
@@ -297,12 +295,12 @@ validationSummary <- function(gdx, hist, reportfile=NULL, outfile="validationSum
 
   # ---- Objective function (global/regional welfare) ----
   swlatex(sw,"\\subsection{Objective function value}")
-  welf <- readGDX(gdx,"v_welfare", react="silent")
+  welf <- readGDX(gdx,c("v02_welfare","v_welfare"), react="silent")
   if(!is.null(welf)) {
     welf <- welf[,,"l"]
     swtable(sw,welf,table.placement="H",caption.placement="top",transpose=TRUE,caption="Welfare",vert.lines=1,align="c")
   } else {
-    swlatex(sw,"Could not find welfare value (v_welfare) in gdx file!")
+    swlatex(sw,"Could not find welfare value (v02_welfare, v_welfare) in gdx file!")
   }
 
   swclose(sw, clean_output=FALSE, engine="knitr")

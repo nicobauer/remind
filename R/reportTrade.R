@@ -25,7 +25,7 @@ reportTrade <- function(gdx,regionSubsetList=NULL) {
   sm_tdptwyr2dpgj <- 31.71   #TerraDollar per TWyear to Dollar per GJ
   
   p_eta_conv       <- readGDX(gdx,name=c("pm_dataeta","p_eta_conv"),format = "first_found")
-  p_costsPEtradeMp <- readGDX(gdx,name=c("p_costsPEtradeMp"),format = "first_found")
+  p_costsPEtradeMp <- readGDX(gdx,name=c("pm_costsPEtradeMp","p_costsPEtradeMp"),format = "first_found")
   pm_pvp       <- readGDX(gdx,name=c("pm_pvp"),format = "first_found")
   Xport        <- readGDX(gdx,name=c("vm_Xport"),field = "l",format = "first_found")
   Mport        <- readGDX(gdx,name=c("vm_Mport"),field = "l",format = "first_found")
@@ -79,8 +79,8 @@ reportTrade <- function(gdx,regionSubsetList=NULL) {
   trade <- mbind(trade,dimSums(trade,dim=1))
   # add other region aggregations
   if (!is.null(regionSubsetList)){
-    tmp <- mbind(tmp,do.call("mbind",lapply(names(regionSubsetList), function(x) { result <- dimSums(tmp[regionSubsetList[[x]],,],dim=1); getRegions(result) <- x ; return(result) })))
-    trade <- mbind(trade,do.call("mbind",lapply(names(regionSubsetList), function(x) { result <- dimSums(trade[regionSubsetList[[x]],,],dim=1); getRegions(result) <- x ; return(result) })))
+    tmp   <- mbind(tmp,   calc_regionSubset_sums(tmp,   regionSubsetList))
+    trade <- mbind(trade, calc_regionSubset_sums(trade, regionSubsetList))
   }
   
   # values use global prices

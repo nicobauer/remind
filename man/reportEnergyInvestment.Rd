@@ -21,8 +21,9 @@ Read in price information from GDX file, information used in convGDX2MIF.R
 for the reporting
 }
 \examples{
-
-\dontrun{reportEnergyInvestment(gdx)}
+\dontrun{
+reportEnergyInvestment(gdx)
+}
 
 }
 \seealso{

@@ -4,8 +4,11 @@
 \alias{readSupplycurveBio}
 \title{Read bioenergy supplycurve from GDX}
 \usage{
-readSupplycurveBio(outputdirs, userfun = function(param, x) {    
-  return(param[[1]] + param[[2]] * x) }, mult_on = "all")
+readSupplycurveBio(
+  outputdirs,
+  userfun = function(param, x) {     return(param[[1]] + param[[2]] * x) },
+  mult_on = "all"
+)
 }
 \arguments{
 \item{outputdirs}{Vector providing the folders that contain the gdx files}
@@ -18,9 +21,6 @@ User can provide a functional form using the following syntax: \code{function(pa
 \description{
 Read coefficients for bioenergy prices from gdx and calculate bioenergy supplycurve. Also read the actual
 demand for bioenergy from gdx.
-}
-\seealso{
-\code{\link[remulator]{emulator}} \code{\link{calc_supplycurve}}
 }
 \author{
 David Klein
